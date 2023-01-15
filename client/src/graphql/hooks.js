@@ -17,14 +17,6 @@ export function useAddMessage() {
         context: {
           headers: { Authorization: 'Bearer ' + getAccessToken() },
         },
-        update: (cache, { data: { message } }) => {
-          cache.updateQuery({ query: MESSAGES_QUERY }, ({ messages }) => {
-            const newdata = {
-              messages: [...messages, message],
-            };
-            return newdata;
-          });
-        },
       });
       return message;
     },
@@ -39,8 +31,11 @@ export function useMessages() {
   });
 
   useSubscription(MESSAGES_ADDED_SUBSCRITION, {
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log(subscriptionData);
+    onSubscriptionData: ({ client, subscriptionData }) => {
+      const message = subscriptionData.data.message;
+      client.cache.updateQuery({ query: MESSAGES_QUERY }, ({ messages }) => {
+        return { messages: [...messages, message] };
+      });
     },
   });
   return {
